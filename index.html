@@ -19,26 +19,31 @@
 
 <div id="topbar" class="hide-back">
   <button id="btn-back" class="mc-btn small">◀ MENU</button>
-  <span class="bar-title"></span>
+  <span class="bar-spacer"></span>
+  <button id="btn-sound" class="mc-btn small">♪ ON</button>
 </div>
 
 <!-- HOME -->
 <section id="screen-home" class="screen active">
-  <div class="logo">
-    <span class="star">★</span>
-    <span class="l1">AIN'T NEVER GONNA FORGET</span>
-    <span class="l2">PRESIDENTS</span>
-    <span class="l3">— NOW —</span>
+  <div class="logo-frame">
+    <div class="logo">
+      <span class="star">★</span>
+      <span class="l1">AIN'T NEVER GONNA FORGET</span>
+      <span class="l2">PRESIDENTS</span>
+      <span class="l3">— NOW —</span>
+    </div>
   </div>
   <div class="home-buttons">
     <button id="btn-play" class="mc-btn green">▶ RAISE A GLASS (QUIZ)</button>
-    <button id="btn-dex" class="mc-btn">📖 THE CAST (PREZ-DEX)</button>
+    <button id="btn-dex" class="mc-btn">📖 THE CAST</button>
     <button id="btn-timeline" class="mc-btn">🎭 THE TIMELINE</button>
   </div>
+  <div id="stage-strip" class="stage-strip"></div>
   <div class="progress-box">
-    <div id="home-progress">0 / 47 presidents committed to memory</div>
+    <div id="home-level" class="level-chip">☆ Understudy ☆</div>
+    <div id="home-progress">0 / 47 committed to memory</div>
     <div class="home-bar"><div id="home-bar-fill"></div></div>
-    <div id="home-xp">Groups mastered 0/16 • XP 0 • Best streak 0</div>
+    <div id="home-xp">XP 0 • Best streak 0</div>
     <button id="btn-reset">reset the show</button>
   </div>
 </section>
@@ -61,7 +66,10 @@
     <div id="quiz-pips"></div>
     <div id="quiz-score">Streak 0</div>
   </div>
-  <div id="quiz-tag" class="quiz-tag new">NEW MATERIAL</div>
+  <div class="quiz-subhead">
+    <div id="quiz-tag" class="quiz-tag new">NEW MATERIAL</div>
+    <button id="btn-study" class="mc-btn tiny">📖 STUDY</button>
+  </div>
   <div id="quiz-icon"></div>
   <div id="quiz-prompt"></div>
   <div id="quiz-options"></div>
@@ -76,7 +84,18 @@
   <div id="timeline-rail"></div>
 </section>
 
+<!-- INTRO OVERLAY -->
+<div id="intro-overlay" class="overlay hidden">
+  <div class="overlay-panel">
+    <div id="intro-title" class="overlay-title">NOW TAKING THE STAGE</div>
+    <div id="intro-sub" class="overlay-sub"></div>
+    <div id="intro-cards"></div>
+    <button id="intro-go" class="mc-btn green">I'M READY — QUIZ ME ▶</button>
+  </div>
+</div>
+
 <div id="toast"></div>
+<div id="confetti"></div>
 
 <script src="js/presidents.js"></script>
 <script src="js/pixelart.js"></script>
