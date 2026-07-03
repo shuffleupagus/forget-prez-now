@@ -1,27 +1,24 @@
-# Ain't Never Gonna Forget Presidents Now
+# Monument Row
 
-A Minecraft-pixel + Hamilton-playbill PWA for learning all 47 U.S. presidents — by
-number, term years, and a fun fact — three at a time.
+A PWA that teaches the timeline of the U.S. presidents by **building it**.
+Each president is dealt as a card (no dates shown) — tap the slot in the
+growing Row where he belongs. Get it right and his monument rises on a
+pixel National Mall, era-styled from colonial brick to modern glass.
 
-- **The Cast** — browse every president as a hand-drawn pixel portrait
-- **Raise a Glass (Quiz)** — master a trio (3 correct in a row) to unlock the next three; mastered groups resurface occasionally as a "Mastery Check"
-- **The Timeline** — fills in as you master each group
+- **The Row** — 9 "wings" deal all 47 presidents, famous anchors first, the
+  rest inserted between people you already know
+- **Tiers** — gold (first try), silver (retry or era hint), bronze (shown);
+  shaky placements re-deal in a Polish Round until earned
+- **The Mall** — the finished diorama; tap any monument for the fun fact
+- **Challenges** (after completion) — Gap Master (who's missing?) and
+  Swap Patrol (spot the swapped neighbors)
 
-Pure HTML/CSS/JS — no build step. Open `index.html` locally, or host as an installable PWA.
+Pure HTML/CSS/JS — no build step. Open `index.html` locally, or host as an
+installable PWA (Safari → Share → Add to Home Screen).
 
-## Deploy to GitHub Pages
+Previous version (playbill quiz app) is preserved in `archive/playbill-v2/`.
 
-1. Create a new **empty** public repo on GitHub (no README/license).
-2. From this folder:
-   ```
-   git remote add origin https://github.com/<USERNAME>/<REPO>.git
-   git branch -M main
-   git push -u origin main
-   ```
-3. In the repo: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `main` / `root`** → Save.
-4. After a minute it's live at `https://<USERNAME>.github.io/<REPO>/`.
+## Deploy
 
-## Install on iPhone (PWA)
-
-Open the Pages URL in **Safari** → Share → **Add to Home Screen**. Launches full-screen
-with the gold-star icon and works offline (service worker caches everything).
+Push to GitHub, enable Pages (main / root). Live at
+`https://<user>.github.io/<repo>/`.

@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
-<title>Ain't Never Gonna Forget Presidents Now</title>
-<meta name="theme-color" content="#13110d" />
+<title>Monument Row</title>
+<meta name="theme-color" content="#7ec3e8" />
 <!-- iOS PWA / home-screen app -->
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Forget Prez Now" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Monument Row" />
 <link rel="apple-touch-icon" href="icons/icon-180.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
 <link rel="manifest" href="manifest.webmanifest" />
@@ -18,87 +18,98 @@
 <body>
 
 <div id="topbar" class="hide-back">
-  <button id="btn-back" class="mc-btn small">◀ MENU</button>
+  <button id="btn-back" class="mr-btn small">◀ MENU</button>
   <span class="bar-spacer"></span>
-  <button id="btn-sound" class="mc-btn small">♪ ON</button>
+  <button id="btn-sound" class="mr-btn small">♪ ON</button>
 </div>
 
 <!-- HOME -->
 <section id="screen-home" class="screen active">
-  <div class="logo-frame">
-    <div class="logo">
-      <span class="star">★</span>
-      <span class="l1">AIN'T NEVER GONNA FORGET</span>
-      <span class="l2">PRESIDENTS</span>
-      <span class="l3">— NOW —</span>
-    </div>
+  <div class="logo">
+    <div class="logo-obelisk">▲<span></span></div>
+    <div class="logo-l1">MONUMENT</div>
+    <div class="logo-l2">ROW</div>
+    <div class="logo-sub">BUILD THE PRESIDENTS' TIMELINE — ONE MONUMENT AT A TIME</div>
   </div>
   <div class="home-buttons">
-    <button id="btn-play" class="mc-btn green">▶ RAISE A GLASS (QUIZ)</button>
-    <button id="btn-dex" class="mc-btn">📖 THE CAST</button>
-    <button id="btn-timeline" class="mc-btn">🎭 THE TIMELINE</button>
+    <button id="btn-play" class="mr-btn primary">▶ START BUILDING</button>
+    <button id="btn-mall" class="mr-btn">🏛 VISIT THE MALL</button>
+    <div class="challenge-row">
+      <button id="btn-gap" class="mr-btn half">🔍 GAP MASTER</button>
+      <button id="btn-swap" class="mr-btn half">🚨 SWAP PATROL</button>
+    </div>
+    <div id="challenge-note" class="challenge-note"></div>
   </div>
-  <div id="stage-strip" class="stage-strip"></div>
   <div class="progress-box">
-    <div id="home-level" class="level-chip">☆ Understudy ☆</div>
-    <div id="home-progress">0 / 47 committed to memory</div>
+    <div id="home-rank" class="rank-chip">🏛 Apprentice</div>
+    <div id="home-count">1 / 47 monuments built</div>
     <div class="home-bar"><div id="home-bar-fill"></div></div>
-    <div id="home-xp">XP 0 • Best streak 0</div>
-    <button id="btn-reset">reset the show</button>
+    <div id="home-xp">XP 0 • Best gold streak 0</div>
+    <button id="btn-reset">tear it down (reset)</button>
   </div>
 </section>
 
-<!-- PREZ-DEX -->
-<section id="screen-dex" class="screen">
-  <div class="section-title">THE CAST</div>
-  <div id="dex-grid"></div>
-</section>
-
-<!-- DETAIL -->
-<section id="screen-detail" class="screen">
-  <div id="detail-body"></div>
-</section>
-
-<!-- QUIZ -->
-<section id="screen-quiz" class="screen">
-  <div class="quiz-head">
-    <div id="quiz-group">NOW LEARNING #1–#3</div>
-    <div id="quiz-pips"></div>
-    <div id="quiz-score">Streak 0</div>
+<!-- GAME -->
+<section id="screen-game" class="screen">
+  <div class="game-head">
+    <span id="game-round">WING 1</span>
+    <span id="game-streak">⚡0</span>
+    <span id="game-progress">1 / 47</span>
   </div>
-  <div class="quiz-subhead">
-    <div id="quiz-tag" class="quiz-tag new">NEW MATERIAL</div>
-    <button id="btn-study" class="mc-btn tiny">📖 STUDY</button>
-  </div>
-  <div id="quiz-icon"></div>
-  <div id="quiz-prompt"></div>
-  <div id="quiz-options"></div>
-  <div id="quiz-feedback" class="quiz-feedback"></div>
-  <button id="quiz-next" class="mc-btn green">NEXT ▶</button>
+  <div id="deal-card"></div>
+  <div id="game-ask" class="game-ask"></div>
+  <div id="game-feedback" class="game-feedback"></div>
+  <div id="row-strip" class="row-strip"></div>
+  <div class="row-help">◀ scroll the Row · ▲ = place him there · tap a face for facts</div>
 </section>
 
-<!-- TIMELINE -->
-<section id="screen-timeline" class="screen">
-  <div class="section-title">THE TIMELINE</div>
-  <div id="timeline-count"></div>
-  <div id="timeline-rail"></div>
+<!-- MALL -->
+<section id="screen-mall" class="screen">
+  <div class="section-title">THE MALL</div>
+  <div id="mall-count" class="mall-count"></div>
+  <div id="mall-rail"></div>
 </section>
 
-<!-- INTRO OVERLAY -->
-<div id="intro-overlay" class="overlay hidden">
+<!-- GAP MASTER -->
+<section id="screen-gap" class="screen">
+  <div class="section-title">GAP MASTER</div>
+  <div id="gap-round" class="challenge-status"></div>
+  <div class="game-ask">Someone's missing — who belongs in the “?” slot?</div>
+  <div id="gap-strip" class="row-strip"></div>
+  <div id="gap-options" class="options"></div>
+</section>
+
+<!-- SWAP PATROL -->
+<section id="screen-swap" class="screen">
+  <div class="section-title">SWAP PATROL</div>
+  <div id="swap-round" class="challenge-status"></div>
+  <div id="swap-ask" class="game-ask"></div>
+  <div id="swap-strip" class="row-strip tall"></div>
+</section>
+
+<!-- shared fact modal -->
+<div id="modal" class="overlay hidden">
   <div class="overlay-panel">
-    <div id="intro-title" class="overlay-title">NOW TAKING THE STAGE</div>
-    <div id="intro-sub" class="overlay-sub"></div>
-    <div id="intro-cards"></div>
-    <button id="intro-go" class="mc-btn green">I'M READY — QUIZ ME ▶</button>
+    <div id="modal-title" class="overlay-kicker"></div>
+    <div id="modal-body"></div>
+    <button id="modal-close" class="mr-btn primary">GOT IT ▶</button>
   </div>
 </div>
 
-<div id="toast"></div>
+<!-- shared banner (round intro / complete) -->
+<div id="banner" class="overlay hidden">
+  <div class="overlay-panel">
+    <div id="banner-kicker" class="overlay-kicker"></div>
+    <div id="banner-title" class="banner-title"></div>
+    <div id="banner-sub" class="banner-sub"></div>
+    <button id="banner-go" class="mr-btn primary">GO ▶</button>
+  </div>
+</div>
+
 <div id="confetti"></div>
 
 <script src="js/presidents.js"></script>
 <script src="js/pixelart.js"></script>
-<script src="js/app.js"></script>
+<script src="js/game.js"></script>
 </body>
 </html>

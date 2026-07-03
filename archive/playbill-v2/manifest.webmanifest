@@ -1,13 +1,13 @@
 {
-  "name": "Monument Row",
-  "short_name": "Monument Row",
-  "description": "Build the timeline of the U.S. presidents — place each one in order and raise his monument on the Mall.",
+  "name": "Ain't Never Gonna Forget Presidents Now",
+  "short_name": "Forget Prez Now",
+  "description": "Learn all 47 U.S. presidents — by number, term years, and a fun fact — three at a time, in a Hamilton-style show.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#7ec3e8",
-  "theme_color": "#7ec3e8",
+  "background_color": "#13110d",
+  "theme_color": "#13110d",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }

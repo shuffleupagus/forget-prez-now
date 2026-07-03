@@ -1,15 +1,25 @@
-/* MONUMENT ROW — pixel art engine
-   1) buildPortrait(recipe): 16x16 president head (same original engine as before)
-   2) buildMonument(style, tier): 18x22 era-styled monument with an empty
-      plaque recess — the portrait canvas is overlaid in the DOM.
-   3) propGrid(name): 8x8 fun-fact icons.
-   All original pixel art.
+/* AIN'T NEVER GONNA FORGET PRESIDENTS NOW — pixel art engine (v2)
+   Builds 16x16 blocky president portraits from a recipe, plus 8x8 prop
+   icons that illustrate each fun fact. All original pixel art.
+
+   Recipe fields:
+   skin      light | tan | medium | dark
+   hair      short | side | comb | wave | quiff | long | wig | bald | balding | peak
+   hairColor css hex
+   facial    none | mustache | handlebar | chinbeard | beard | mutton | shadow
+   brows     none | flat | thick | arch     (skipped when glasses present)
+   mouth     smile | flat | grin | smirk
+   glasses   none | round | square
+   hat       none | tophat
+   collar    suit | cravat | stock | bowtie
+   tie       css hex (suit/bowtie tie color)
+   accessory none | flower
 */
 (function (global) {
   "use strict";
 
-  /* ================= PORTRAITS (16x16) ================= */
   var SIZE = 16;
+
   var SKIN = {
     light:  { base: "#f0c8a0", shade: "#d8a87c", ear: "#caa074" },
     tan:    { base: "#dca878", shade: "#c08a58", ear: "#b07c4c" },
@@ -19,20 +29,34 @@
   var EYE_W = "#ffffff", PUPIL = "#3a2a20", MOUTH = "#9a4a40", TEETH = "#f5f0e6";
   var FRAME = "#1c1c20", SHIRT = "#f2efe6";
 
-  function grid(w, h) {
+  function blank() {
     var g = [];
-    for (var y = 0; y < h; y++) { var row = []; for (var x = 0; x < w; x++) row.push(null); g.push(row); }
+    for (var y = 0; y < SIZE; y++) { var row = []; for (var x = 0; x < SIZE; x++) row.push(null); g.push(row); }
     return g;
   }
-  function set(g, x, y, c) { if (y >= 0 && y < g.length && x >= 0 && x < g[0].length && c) g[y][x] = c; }
+  function set(g, x, y, c) { if (x >= 0 && x < SIZE && y >= 0 && y < SIZE && c) g[y][x] = c; }
   function rowFill(g, y, x0, x1, c) { for (var x = x0; x <= x1; x++) set(g, x, y, c); }
-  function boxFill(g, x0, y0, x1, y1, c) { for (var y = y0; y <= y1; y++) rowFill(g, y, x0, x1, c); }
 
   function lighten(hex, amt) {
     var n = parseInt(hex.slice(1), 16);
     var r = (n >> 16) & 255, gg = (n >> 8) & 255, b = n & 255;
-    function f(v) { return Math.max(0, Math.min(255, Math.round(amt >= 0 ? v + (255 - v) * amt : v * (1 + amt)))); }
-    return "#" + ((1 << 24) + (f(r) << 16) + (f(gg) << 8) + f(b)).toString(16).slice(1);
+    r = Math.min(255, Math.round(r + (255 - r) * amt));
+    gg = Math.min(255, Math.round(gg + (255 - gg) * amt));
+    b = Math.min(255, Math.round(b + (255 - b) * amt));
+    return "#" + ((1 << 24) + (r << 16) + (gg << 8) + b).toString(16).slice(1);
+  }
+
+  /* ---------- face base ---------- */
+  function drawFace(g, sk, r) {
+    for (var y = 4; y <= 12; y++) for (var x = 4; x <= 11; x++) set(g, x, y, sk.base);
+    for (var yy = 5; yy <= 11; yy++) set(g, 11, yy, sk.shade);   // right shade
+    set(g, 4, 12, sk.shade); set(g, 11, 12, sk.shade);
+    set(g, 3, 8, sk.ear); set(g, 3, 9, sk.ear);                  // ears
+    set(g, 12, 8, sk.ear); set(g, 12, 9, sk.ear);
+    set(g, 5, 7, EYE_W); set(g, 6, 7, PUPIL);                    // eyes
+    set(g, 9, 7, PUPIL); set(g, 10, 7, EYE_W);
+    set(g, 7, 9, sk.shade); set(g, 8, 9, sk.shade);              // nose
+    drawMouth(g, r.mouth || "smile");
   }
 
   function drawMouth(g, m) {
@@ -44,66 +68,99 @@
       rowFill(g, 11, 6, 9, MOUTH);
     } else if (m === "smirk") {
       rowFill(g, 11, 6, 8, MOUTH); set(g, 9, 10, MOUTH);
-    } else {
+    } else { // smile
       set(g, 5, 10, MOUTH); set(g, 10, 10, MOUTH);
       rowFill(g, 11, 6, 9, MOUTH);
     }
   }
+
   var BROWS = {
     none: function () {},
     flat: function (g, c) { set(g, 5, 6, c); set(g, 6, 6, c); set(g, 9, 6, c); set(g, 10, 6, c); },
     thick: function (g, c) { rowFill(g, 6, 5, 6, c); rowFill(g, 6, 9, 10, c); set(g, 5, 5, c); set(g, 10, 5, c); },
     arch: function (g, c) { set(g, 5, 5, c); set(g, 6, 6, c); set(g, 9, 6, c); set(g, 10, 5, c); }
   };
+
+  /* ---------- collars ---------- */
   function collarSuit(g, coat, tie) {
     rowFill(g, 13, 6, 9, SHIRT);
     rowFill(g, 14, 3, 12, coat); rowFill(g, 15, 3, 12, coat);
-    set(g, 6, 14, SHIRT); set(g, 9, 14, SHIRT);
-    set(g, 7, 14, tie); set(g, 8, 14, tie); set(g, 7, 15, tie); set(g, 8, 15, tie);
+    set(g, 6, 14, SHIRT); set(g, 9, 14, SHIRT);            // collar points
+    set(g, 7, 14, tie); set(g, 8, 14, tie);                 // tie
+    set(g, 7, 15, tie); set(g, 8, 15, tie);
   }
   function collarCravat(g) {
-    rowFill(g, 14, 3, 12, "#3a2a1c"); rowFill(g, 15, 3, 12, "#2c2014");
-    rowFill(g, 13, 5, 10, "#f5f0e6");
+    rowFill(g, 14, 3, 12, "#3a2a1c"); rowFill(g, 15, 3, 12, "#2c2014");   // colonial coat
+    rowFill(g, 13, 5, 10, "#f5f0e6");                                     // ruffle
     set(g, 7, 14, "#f5f0e6"); set(g, 8, 14, "#f5f0e6");
   }
   function collarStock(g) {
-    set(g, 5, 13, "#f5f0e6"); set(g, 10, 13, "#f5f0e6");
-    rowFill(g, 13, 6, 9, "#1a1a1a");
+    set(g, 5, 13, "#f5f0e6"); set(g, 10, 13, "#f5f0e6");   // tall white collar points
+    rowFill(g, 13, 6, 9, "#1a1a1a");                        // black stock band
     rowFill(g, 14, 3, 12, "#241d16"); rowFill(g, 15, 3, 12, "#1a140d");
   }
   function collarBowtie(g, coat, tie) {
     rowFill(g, 13, 6, 9, SHIRT);
     rowFill(g, 14, 3, 12, coat); rowFill(g, 15, 3, 12, coat);
-    set(g, 6, 14, tie); set(g, 9, 14, tie);
-    set(g, 7, 14, lighten(tie, 0.25)); set(g, 8, 14, lighten(tie, 0.25));
+    set(g, 6, 14, tie); set(g, 9, 14, tie);                 // wings
+    set(g, 7, 14, lighten(tie, 0.25)); set(g, 8, 14, lighten(tie, 0.25)); // knot
   }
+
+  /* ---------- hair ---------- */
   var HAIR = {
-    short: function (g, c) { rowFill(g, 2, 5, 10, c); rowFill(g, 3, 4, 11, c); rowFill(g, 4, 4, 11, c); set(g, 4, 5, c); set(g, 11, 5, c); },
-    side: function (g, c) { rowFill(g, 2, 5, 10, c); rowFill(g, 3, 4, 11, c); rowFill(g, 4, 4, 10, c); set(g, 4, 5, c); set(g, 11, 4, c); set(g, 11, 5, c); },
-    comb: function (g, c) { boxFill(g, 4, 1, 11, 4, c); set(g, 11, 5, c); },
-    wave: function (g, c) { rowFill(g, 1, 6, 9, c); rowFill(g, 2, 5, 10, c); boxFill(g, 4, 3, 11, 4, c); set(g, 4, 5, c); set(g, 11, 5, c); },
-    quiff: function (g, c) { rowFill(g, 0, 6, 9, c); rowFill(g, 1, 5, 10, c); boxFill(g, 4, 2, 11, 4, c); set(g, 11, 5, c); },
-    long: function (g, c) {
-      rowFill(g, 0, 5, 10, c); boxFill(g, 4, 1, 11, 4, c);
+    short: function (g, c) {
+      rowFill(g, 2, 5, 10, c); rowFill(g, 3, 4, 11, c); rowFill(g, 4, 4, 11, c);
+      set(g, 4, 5, c); set(g, 11, 5, c);
+    },
+    side: function (g, c) {
+      rowFill(g, 2, 5, 10, c); rowFill(g, 3, 4, 11, c); rowFill(g, 4, 4, 10, c);
+      set(g, 4, 5, c); set(g, 11, 4, c); set(g, 11, 5, c);
+    },
+    comb: function (g, c) {
+      rowFill(g, 1, 4, 11, c); rowFill(g, 2, 4, 11, c); rowFill(g, 3, 4, 11, c);
+      rowFill(g, 4, 4, 11, c); set(g, 11, 5, c);
+    },
+    wave: function (g, c) {
+      rowFill(g, 1, 6, 9, c); rowFill(g, 2, 5, 10, c); rowFill(g, 3, 4, 11, c);
+      rowFill(g, 4, 4, 11, c); set(g, 4, 5, c); set(g, 11, 5, c);
+    },
+    quiff: function (g, c) {
+      rowFill(g, 0, 6, 9, c); rowFill(g, 1, 5, 10, c); rowFill(g, 2, 4, 11, c);
+      rowFill(g, 3, 4, 11, c); rowFill(g, 4, 4, 11, c); set(g, 11, 5, c);
+    },
+    long: function (g, c) { // tall wild sweep + sideburns (Jackson/Polk)
+      rowFill(g, 0, 5, 10, c); rowFill(g, 1, 4, 11, c); rowFill(g, 2, 4, 11, c);
+      rowFill(g, 3, 4, 11, c); rowFill(g, 4, 4, 11, c);
       set(g, 4, 5, c); set(g, 11, 5, c); set(g, 4, 6, c); set(g, 11, 6, c);
     },
-    wig: function (g, c) {
-      boxFill(g, 4, 2, 11, 3, c); set(g, 4, 4, c); set(g, 11, 4, c);
+    wig: function (g, c) { // colonial wig with side rolls
+      rowFill(g, 2, 4, 11, c); rowFill(g, 3, 4, 11, c);
+      set(g, 4, 4, c); set(g, 11, 4, c);
       for (var y = 5; y <= 9; y++) { set(g, 3, y, c); set(g, 12, y, c); }
       set(g, 2, 6, c); set(g, 2, 7, c); set(g, 13, 6, c); set(g, 13, 7, c);
     },
-    bald: function (g, c) { set(g, 4, 5, c); set(g, 11, 5, c); set(g, 3, 6, c); set(g, 12, 6, c); },
+    bald: function (g, c) {
+      set(g, 4, 5, c); set(g, 11, 5, c); set(g, 3, 6, c); set(g, 12, 6, c);
+    },
     balding: function (g, c) {
       rowFill(g, 4, 4, 5, c); rowFill(g, 4, 10, 11, c);
       set(g, 4, 5, c); set(g, 11, 5, c); set(g, 3, 6, c); set(g, 12, 6, c);
       set(g, 4, 6, c); set(g, 11, 6, c);
     },
-    peak: function (g, c) { rowFill(g, 2, 7, 8, c); rowFill(g, 3, 5, 10, c); rowFill(g, 4, 4, 11, c); set(g, 4, 5, c); set(g, 11, 5, c); }
+    peak: function (g, c) { // widow's peak (Nixon)
+      rowFill(g, 2, 7, 8, c); rowFill(g, 3, 5, 10, c); rowFill(g, 4, 4, 11, c);
+      set(g, 4, 5, c); set(g, 11, 5, c);
+    }
   };
+
+  /* ---------- facial hair ---------- */
   var FACIAL = {
     none: function () {},
     mustache: function (g, c) { rowFill(g, 10, 5, 10, c); },
-    handlebar: function (g, c) { rowFill(g, 10, 5, 10, c); set(g, 4, 10, c); set(g, 11, 10, c); set(g, 4, 9, c); set(g, 11, 9, c); },
+    handlebar: function (g, c) {
+      rowFill(g, 10, 5, 10, c); set(g, 4, 10, c); set(g, 11, 10, c);
+      set(g, 4, 9, c); set(g, 11, 9, c);
+    },
     chinbeard: function (g, c) {
       for (var y = 8; y <= 11; y++) { set(g, 4, y, c); set(g, 11, y, c); }
       rowFill(g, 12, 4, 11, c); rowFill(g, 13, 5, 10, c); rowFill(g, 14, 6, 9, c);
@@ -117,13 +174,22 @@
       for (var y = 6; y <= 12; y++) { set(g, 3, y, c); set(g, 4, y, c); set(g, 11, y, c); set(g, 12, y, c); }
       rowFill(g, 10, 5, 10, c);
     },
-    shadow: function (g) { var s = "#9a8068"; rowFill(g, 12, 4, 11, s); rowFill(g, 10, 5, 10, s); }
+    shadow: function (g) {
+      var s = "#9a8068";
+      rowFill(g, 12, 4, 11, s); rowFill(g, 10, 5, 10, s);
+    }
   };
+
   var GLASSES = {
     none: function () {},
-    round: function (g) { [4, 7, 8, 11].forEach(function (x) { set(g, x, 6, FRAME); set(g, x, 7, FRAME); set(g, x, 8, FRAME); }); },
-    square: function (g) { [4, 7, 8, 11].forEach(function (x) { set(g, x, 6, FRAME); set(g, x, 8, FRAME); }); }
+    round: function (g) {
+      [4, 7, 8, 11].forEach(function (x) { set(g, x, 6, FRAME); set(g, x, 7, FRAME); set(g, x, 8, FRAME); });
+    },
+    square: function (g) {
+      [4, 7, 8, 11].forEach(function (x) { set(g, x, 6, FRAME); set(g, x, 8, FRAME); });
+    }
   };
+
   var HATS = {
     tophat: function (g) {
       var blk = "#101014", band = "#3a3a44";
@@ -133,22 +199,17 @@
   };
 
   function buildPortrait(r) {
-    var g = grid(SIZE, SIZE);
+    var g = blank();
     var sk = SKIN[r.skin] || SKIN.light;
-    var coat = r.coat || "#20242e", tie = r.tie || "#7a1f24";
+    var coat = r.coat || "#20242e";
+    var tie = r.tie || "#7a1f24";
+    // collar first (face/beard draw over its top edge where needed)
     if (r.collar === "cravat") collarCravat(g);
     else if (r.collar === "stock") collarStock(g);
     else if (r.collar === "bowtie") collarBowtie(g, coat, tie);
     else collarSuit(g, coat, tie);
 
-    boxFill(g, 4, 4, 11, 12, sk.base);
-    for (var yy = 5; yy <= 11; yy++) set(g, 11, yy, sk.shade);
-    set(g, 4, 12, sk.shade); set(g, 11, 12, sk.shade);
-    set(g, 3, 8, sk.ear); set(g, 3, 9, sk.ear); set(g, 12, 8, sk.ear); set(g, 12, 9, sk.ear);
-    set(g, 5, 7, EYE_W); set(g, 6, 7, PUPIL); set(g, 9, 7, PUPIL); set(g, 10, 7, EYE_W);
-    set(g, 7, 9, sk.shade); set(g, 8, 9, sk.shade);
-    drawMouth(g, r.mouth || "smile");
-
+    drawFace(g, sk, r);
     (HAIR[r.hair] || HAIR.short)(g, r.hairColor || "#5a3a22");
     (FACIAL[r.facial] || FACIAL.none)(g, r.hairColor || "#3a2a1c");
     if (!r.glasses || r.glasses === "none") (BROWS[r.brows] || BROWS.flat)(g, r.hairColor || "#3a2a1c");
@@ -156,6 +217,7 @@
     if (r.hat && HATS[r.hat]) HATS[r.hat](g);
     if (r.accessory === "flower") set(g, 10, 14, "#c03040");
 
+    // two-tone hair: highlight the top-most hair pixel of each column
     var hc = r.hairColor;
     if (hc && !r.hat) {
       var hl = lighten(hc, 0.22);
@@ -166,97 +228,6 @@
         }
       }
     }
-    return g;
-  }
-
-  /* ================= MONUMENTS (18x22) =================
-     Era-styled building with a dark plaque recess at x6-11, y10-15.
-     tier = gold | silver | bronze -> plinth trim color. */
-  var MW = 18, MH = 22;
-  var TIER = { gold: "#d4af4f", silver: "#b9bec8", bronze: "#b0783c" };
-  var STYLES = {
-    colonial:   { wall: "#a34a3a", wall2: "#8a3a2c", roof: "triangle", roofC: "#4a4a55", win: "#f5efdc" },
-    greek:      { wall: "#e8e2d0", wall2: "#d6cfba", roof: "pediment", roofC: "#c9c2ac", win: "#8a8478", cols: "#f5f0e2" },
-    brownstone: { wall: "#6b4a3a", wall2: "#5a3c2e", roof: "mansard",  roofC: "#3a3038", win: "#e8d9a8" },
-    gilded:     { wall: "#b0aa9a", wall2: "#9c9686", roof: "mansard",  roofC: "#4a5560", win: "#d8e6f0" },
-    deco:       { wall: "#d8cfae", wall2: "#c4ba96", roof: "steps",    roofC: "#b8ae8a", win: "#7a94a8" },
-    concrete:   { wall: "#9aa0a6", wall2: "#868c92", roof: "flat",     roofC: "#767c82", win: "#c8dce8" },
-    glass:      { wall: "#7ab8d8", wall2: "#5a9cc0", roof: "flat",     roofC: "#4a86a8", win: "#b8e0f4" }
-  };
-
-  function buildMonument(styleName, tier) {
-    var s = STYLES[styleName] || STYLES.greek;
-    var g = grid(MW, MH);
-    var trim = TIER[tier] || TIER.silver;
-
-    // ground: lawn + stone path
-    rowFill(g, 21, 0, MW - 1, "#5e9648");
-    rowFill(g, 20, 0, MW - 1, "#6aa84f");
-    // plinth (rows 17-19), trim on top edge
-    boxFill(g, 2, 18, 15, 19, "#cfc9b8");
-    rowFill(g, 19, 2, 15, "#b8b2a0");
-    rowFill(g, 17, 3, 14, trim);
-    // steps
-    rowFill(g, 19, 0, 1, "#b8b2a0"); rowFill(g, 19, 16, 17, "#b8b2a0");
-
-    // body (rows 8-16)
-    boxFill(g, 3, 8, 14, 16, s.wall);
-    for (var y = 8; y <= 16; y++) set(g, 14, y, s.wall2); // right shade
-    rowFill(g, 16, 3, 14, s.wall2);
-
-    // greek columns
-    if (s.cols) {
-      [3, 5, 12, 14].forEach(function (x) { for (var y = 9; y <= 16; y++) set(g, x, y, s.cols); });
-    }
-    // side windows
-    [9, 12, 14].forEach(function (y) {
-      set(g, 4, y, s.win); set(g, 5, y, s.win);
-      set(g, 12, y, s.win); set(g, 13, y, s.win);
-    });
-
-    // plaque recess (portrait overlays here in DOM): x6-11, y10-15
-    boxFill(g, 6, 10, 11, 15, "#241f1a");
-    // plaque frame
-    rowFill(g, 9, 6, 11, trim);
-    for (var py = 10; py <= 15; py++) { set(g, 5, py, trim); set(g, 12, py, trim); }
-
-    // roof
-    if (s.roof === "triangle" || s.roof === "pediment") {
-      rowFill(g, 7, 2, 15, s.roofC);
-      rowFill(g, 6, 4, 13, s.roofC);
-      rowFill(g, 5, 6, 11, s.roofC);
-      rowFill(g, 4, 8, 9, s.roofC);
-      if (s.roof === "pediment") rowFill(g, 7, 2, 15, lighten(s.roofC, -0.15));
-      set(g, 8, 3, trim); set(g, 9, 3, trim); // gold cap
-    } else if (s.roof === "mansard") {
-      rowFill(g, 7, 3, 14, s.roofC);
-      rowFill(g, 6, 4, 13, s.roofC);
-      rowFill(g, 5, 5, 12, s.roofC);
-      rowFill(g, 4, 6, 11, lighten(s.roofC, 0.12));
-      set(g, 8, 3, trim); set(g, 9, 3, trim);
-    } else if (s.roof === "steps") {
-      rowFill(g, 7, 3, 14, s.roofC);
-      rowFill(g, 6, 5, 12, s.roofC);
-      rowFill(g, 5, 6, 11, lighten(s.roofC, 0.1));
-      rowFill(g, 4, 7, 10, lighten(s.roofC, 0.18));
-      rowFill(g, 3, 8, 9, trim);
-    } else { // flat
-      rowFill(g, 7, 2, 15, s.roofC);
-      rowFill(g, 6, 3, 14, lighten(s.roofC, 0.1));
-      set(g, 8, 5, trim); set(g, 9, 5, trim);
-    }
-    return g;
-  }
-
-  /* locked slot: pale obelisk silhouette */
-  function buildLocked() {
-    var g = grid(MW, MH);
-    rowFill(g, 21, 0, MW - 1, "#5e9648");
-    rowFill(g, 20, 0, MW - 1, "#6aa84f");
-    boxFill(g, 6, 18, 11, 19, "#c4beae");
-    var c = "#d8d2c2";
-    boxFill(g, 8, 5, 9, 17, c);
-    set(g, 8, 4, c); set(g, 9, 4, c); set(g, 8, 3, "#e6e0d0"); set(g, 9, 3, "#e6e0d0");
     return g;
   }
 
@@ -277,9 +248,9 @@
       "........","..#__#..",".#####_.","#_####_#","#######_","_#####_#",".#####_.","..####.."]),
     parrot: I({ "g": "#2ecc40", "r": "#ff4136", "y": "#ffdc00", "k": "#222222" }, [
       "...gg...","..gggg..",".gggggr.","ygggg.r.","yggg....",".ggg....","..g.k...","..k.k..."]),
-    ok: I({ "#": "#d49a2a", "_": "#3a2a20" }, [
+    ok: I({ "#": "#ffdc00", "_": "#3a2a20" }, [
       "........","#__.#__#","#_#.#.#.","#_#.##..","#_#.#.#.","#__.#.#.","........","........"]),
-    snow: I({ "#": "#9ecbe8", "_": "#ffffff" }, [
+    snow: I({ "#": "#bfe6ff", "_": "#ffffff" }, [
       "...#....",".#.#.#..","..###...","#######.","..###...",".#.#.#..","...#....","........"]),
     family: I({ "#": "#5a3a22", "s": "#f0c8a0", "b": "#3a6ea5" }, [
       ".s.s.s..","#######.","sbsbsbs.","#######.","#.#.#.#.","........","........","........"]),
@@ -295,24 +266,24 @@
       "..###...",".#x.x#..","#.x.x.#.","#x...x#.","#.x.x.#.",".#x.x#..","..###...","........"]),
     tophat: I({ "#": "#101014", "_": "#3a3a44" }, [
       "..####..","..#..#..","..#..#..","..####..","..____..","#######.","#######.","........"]),
-    needle: I({ "#": "#8a8a92", "_": "#ff4136" }, [
+    needle: I({ "#": "#c0c0c0", "_": "#ff4136" }, [
       ".......#","......#.",".....#..","....#...","..._#...","..#.#...","_#......","........"]),
-    ticket: I({ "#": "#e8c84a", "_": "#3a2a20", "x": "#ff4136" }, [
+    ticket: I({ "#": "#ffdc00", "_": "#3a2a20", "x": "#ff4136" }, [
       "........","########","#_x_x_x#","#______#","#_xxxx_#","#______#","########","........"]),
-    phone: I({ "#": "#222222", "_": "#d49a2a" }, [
+    phone: I({ "#": "#222222", "_": "#ffdc00" }, [
       ".##..##.","#__####.","#______#","..####..","...##...","...##...","..####..","........"]),
-    pencils: I({ "y": "#e8c84a", "_": "#3a2a20", "p": "#ffb6c1" }, [
+    pencils: I({ "y": "#ffdc00", "_": "#3a2a20", "p": "#ffb6c1" }, [
       "p......p",".y....y.","..y..y..","..y..y..","..y..y..","..y..y..",".._.._..","........"]),
     pants: I({ "#": "#3a6ea5", "_": "#22364a" }, [
       "#######.","#######.","#######.","#_###_#.","#_#.#_#.","#_#.#_#.","#_#.#_#.","##...##."]),
     rings: I({ "#": "#d4b24a", "_": "#ffffff" }, [
       "..#..#..",".#_##_#.","#_#..#_#","#_#..#_#",".#_##_#.","..#..#..","........","........"]),
-    bulb: I({ "#": "#e8c84a", "_": "#888888", "x": "#ffffff" }, [
+    bulb: I({ "#": "#ffdc00", "_": "#888888", "x": "#ffffff" }, [
       "..####..",".#xxxx#.","#xxxxxx#","#xxxxxx#",".#xxxx#.","..####..","..#__#..","..####.."]),
-    twoterm: I({ "#": "#d49a2a", "_": "#3a2a20" }, [
+    twoterm: I({ "#": "#ffdc00", "_": "#3a2a20" }, [
       "........","##..####","#.#....#",".#..####","#...#...","###.####","........","........"]),
-    flower: I({ "r": "#ff4136", "g": "#2ecc40" }, [
-      "..r.r...",".rrrrr..","r.rrr.r.",".rrrrr..","..rgr...","...g....","..ggg...","...g...."]),
+    flower: I({ "r": "#ff4136", "g": "#2ecc40", "y": "#ffdc00" }, [
+      "..r.r...",".rrrrr..","r.ryr.r.",".rrrrr..","..rgr...","...g....","..ggg...","...g...."]),
     teddy: I({ "#": "#8a5a2a", "k": "#222222", "_": "#b07c4c" }, [
       "##....##","########","#kk##kk#","##_##_##","#######.",".#####..","#.#..#.#",".#....#."]),
     bathtub: I({ "#": "#ffffff", "w": "#6ec6ff", "_": "#bbbbbb" }, [
@@ -325,7 +296,7 @@
       "#......#","##....##",".######.",".kwkwwk.",".######.","..k##k..","#.#..#.#","kkkkkkkk"]),
     gator: I({ "#": "#3c9a4a", "k": "#222222", "w": "#ffffff" }, [
       "........","#w#.....","####....","########","########","#k#k#k#k","........","........"]),
-    x4: I({ "#": "#ff4136", "_": "#d49a2a" }, [
+    x4: I({ "#": "#ff4136", "_": "#ffdc00" }, [
       "........","#_#..#_#",".#_..#.#","..#..#_#",".#_..#_#","#_#..#_#","........","........"]),
     buck: I({ "#": "#5a3a20", "_": "#f2efe6", "x": "#222222" }, [
       "........","########","#______#","#x_xx_x#","#______#","########","...##...","..####.."]),
@@ -341,7 +312,7 @@
       "........","..####..",".######.","#_#__#_#","#__##__#","#_#__#_#",".######.","..####.."]),
     peanut: I({ "#": "#c8a05a", "_": "#a87c3c" }, [
       "..####..",".#_##_#.","..####..","...##...","..####..",".#_##_#.","..####..","........"]),
-    jellybeans: I({ "j": "#888888", "r": "#ff4136", "g": "#2ecc40", "y": "#e8c84a", "b": "#3a6ea5" }, [
+    jellybeans: I({ "j": "#888888", "r": "#ff4136", "g": "#2ecc40", "y": "#ffdc00", "b": "#3a6ea5" }, [
       ".jjjjjj.","jrgybrgj","jbrgyrbj","jygbrygj","jrbygrbj","jgyrbygj","jbygrbyj",".jjjjjj."]),
     broccoli: I({ "g": "#2ecc40", "_": "#7cb342", "x": "#ff4136" }, [
       "x.gg.gg.","x.gggggg","x_gggggx","x._gg_.x","x.._.._x","x..__..x","..x.....","........"]),
@@ -374,9 +345,9 @@
     return g;
   }
 
-  /* ---------- render any color grid to a canvas ---------- */
-  function render(canvas, g) {
-    var rows = g.length, cols = g[0].length;
+  /* ---------- render color grid to canvas ---------- */
+  function render(canvas, grid) {
+    var rows = grid.length, cols = grid[0].length;
     var ctx = canvas.getContext("2d");
     var cw = canvas.width, ch = canvas.height;
     var scale = Math.floor(Math.min(cw / cols, ch / rows));
@@ -387,7 +358,7 @@
     ctx.imageSmoothingEnabled = false;
     for (var y = 0; y < rows; y++) {
       for (var x = 0; x < cols; x++) {
-        var c = g[y][x];
+        var c = grid[y][x];
         if (!c) continue;
         ctx.fillStyle = c;
         ctx.fillRect(ox + x * scale, oy + y * scale, scale, scale);
@@ -395,11 +366,5 @@
     }
   }
 
-  global.PixelArt = {
-    buildPortrait: buildPortrait,
-    buildMonument: buildMonument,
-    buildLocked: buildLocked,
-    propGrid: propGrid,
-    render: render
-  };
+  global.PixelArt = { buildPortrait: buildPortrait, propGrid: propGrid, render: render, PROPS: PROPS };
 })(window);

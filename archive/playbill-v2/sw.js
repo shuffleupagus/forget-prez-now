@@ -1,9 +1,10 @@
-/* Monument Row — offline cache (stale-while-revalidate) */
-var CACHE = "monrow-v1";
+/* Ain't Never Gonna Forget Presidents Now — offline cache (v2)
+   Stale-while-revalidate: serve from cache instantly, refresh in background. */
+var CACHE = "anfgpn-v3";
 var ASSETS = [
   "./", "./index.html", "./manifest.webmanifest",
   "./css/styles.css",
-  "./js/presidents.js", "./js/pixelart.js", "./js/game.js",
+  "./js/presidents.js", "./js/pixelart.js", "./js/app.js",
   "./icons/icon-180.png", "./icons/icon-192.png", "./icons/icon-512.png"
 ];
 self.addEventListener("install", function (e) {

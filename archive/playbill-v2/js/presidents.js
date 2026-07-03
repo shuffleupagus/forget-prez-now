@@ -1,8 +1,13 @@
-/* MONUMENT ROW — president data
-   n=number, name, short, start/end=term years, party, nick=nickname,
-   fact=kid-friendly fun fact, recipe=pixel portrait, prop=fact icon,
-   second=true when this is a 2nd non-consecutive term (shown on the card
-   so the player can tell the twins apart).
+/* AIN'T NEVER GONNA FORGET PRESIDENTS NOW — president data (v2)
+   n      = number (1..47; Cleveland is 22 AND 24, Trump is 45 AND 47)
+   name   = full name
+   short  = last name (quiz labels)
+   start, end = term years
+   party  = political party
+   nick   = historical nickname (shown on detail card)
+   fact   = ONE kid-friendly fun fact, illustrated by `prop`
+   recipe = pixel-portrait build options (see pixelart.js)
+   prop   = key into PixelArt.PROPS
 */
 window.PRESIDENTS = [
   { n:1,  name:"George Washington", short:"Washington", start:1789, end:1797, party:"None", nick:"The Father of His Country",
@@ -74,7 +79,7 @@ window.PRESIDENTS = [
   { n:23, name:"Benjamin Harrison", short:"B. Harrison", start:1889, end:1893, party:"Republican", nick:"The Human Iceberg",
     fact:"He got the White House's first electricity — but was too scared to touch the light switches!",
     recipe:{skin:"light", hair:"short", hairColor:"#cfcfcf", facial:"beard", brows:"flat", mouth:"flat", collar:"suit", tie:"#a03030"}, prop:"bulb" },
-  { n:24, name:"Grover Cleveland", short:"Cleveland", start:1893, end:1897, party:"Democratic", nick:"Uncle Jumbo, Act II", second:true,
+  { n:24, name:"Grover Cleveland", short:"Cleveland", start:1893, end:1897, party:"Democratic", nick:"Uncle Jumbo, Act II",
     fact:"He was the FIRST president to serve two separate terms — he's #22 AND #24!",
     recipe:{skin:"light", hair:"balding", hairColor:"#4a3320", facial:"mustache", brows:"flat", mouth:"flat", collar:"suit", tie:"#3a6ea5"}, prop:"twoterm" },
   { n:25, name:"William McKinley", short:"McKinley", start:1897, end:1901, party:"Republican", nick:"The Idol of Ohio",
@@ -143,33 +148,18 @@ window.PRESIDENTS = [
   { n:46, name:"Joe Biden", short:"Biden", start:2021, end:2025, party:"Democratic", nick:"Amtrak Joe",
     fact:"He's famous for loving ice cream — chocolate chip is his favorite!",
     recipe:{skin:"light", hair:"side", hairColor:"#e6e6e6", brows:"flat", mouth:"grin", glasses:"square", collar:"suit", tie:"#3a6ea5"}, prop:"icecream" },
-  { n:47, name:"Donald Trump", short:"Trump", start:2025, end:2029, party:"Republican", nick:"The Donald, Act II", second:true,
+  { n:47, name:"Donald Trump", short:"Trump", start:2025, end:2029, party:"Republican", nick:"The Donald, Act II",
     fact:"He became the SECOND president to serve two separate terms — the first since Grover Cleveland!",
     recipe:{skin:"tan", hair:"comb", hairColor:"#d8b35a", brows:"thick", mouth:"flat", collar:"suit", tie:"#a03030"}, prop:"star" }
 ];
 
-/* Eras — drive monument architecture styles and hints */
+/* Eras for the timeline (by president number) */
 window.ERAS = [
-  { name:"The Founding Era",             span:"1789–1829", from:1,  to:6,  style:"colonial" },
-  { name:"Expansion & Division",         span:"1829–1861", from:7,  to:15, style:"greek" },
-  { name:"Civil War & Reconstruction",   span:"1861–1877", from:16, to:18, style:"brownstone" },
-  { name:"The Gilded Age",               span:"1877–1901", from:19, to:25, style:"gilded" },
-  { name:"Progressive Era & World Wars", span:"1901–1953", from:26, to:33, style:"deco" },
-  { name:"The Cold War",                 span:"1953–1993", from:34, to:41, style:"concrete" },
-  { name:"The Modern Era",               span:"1993–today", from:42, to:47, style:"glass" }
-];
-
-/* Build order: Washington is pre-placed as the seed. Each round deals its
-   cards shuffled. Famous anchors first (easy, spread across the line), then
-   history fills the gaps era by era. */
-window.ROUNDS = [
-  { title:"The Tent Poles",       nums:[16, 44, 3, 26, 32, 35, 40] },
-  { title:"Founders & Framers",   nums:[2, 4, 5, 6, 7] },
-  { title:"Log Cabin Years",      nums:[8, 9, 10, 11, 12] },
-  { title:"A House Divided",      nums:[13, 14, 15, 17, 18] },
-  { title:"The Gilded Age",       nums:[19, 20, 21, 22, 23] },
-  { title:"A New Century",        nums:[24, 25, 27, 28, 29] },
-  { title:"Boom, Bust & Victory", nums:[30, 31, 33, 34, 36] },
-  { title:"The Cold War",         nums:[37, 38, 39, 41, 42] },
-  { title:"The Modern Era",       nums:[43, 45, 46, 47] }
+  { name:"The Founding Era",             span:"1789–1829", from:1,  to:6  },
+  { name:"Expansion & Division",         span:"1829–1861", from:7,  to:15 },
+  { name:"Civil War & Reconstruction",   span:"1861–1877", from:16, to:18 },
+  { name:"The Gilded Age",               span:"1877–1901", from:19, to:25 },
+  { name:"Progressive Era & World Wars", span:"1901–1953", from:26, to:33 },
+  { name:"The Cold War",                 span:"1953–1993", from:34, to:41 },
+  { name:"The Modern Era",               span:"1993–today", from:42, to:47 }
 ];

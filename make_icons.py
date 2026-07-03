@@ -1,52 +1,44 @@
+# Monument Row icon: white obelisk on sky over lawn, gold sun
 import math
 from PIL import Image, ImageDraw
 
-def star_points(cx, cy, R, r, n=5, rot=-math.pi/2):
-    pts = []
-    for i in range(n*2):
-        ang = rot + i*math.pi/n
-        rad = R if i % 2 == 0 else r
-        pts.append((cx + rad*math.cos(ang), cy + rad*math.sin(ang)))
-    return pts
-
-def make(size, pad_frac=0.0, fname=""):
+def make(size, fname):
     S = size
-    img = Image.new("RGBA", (S, S), (0,0,0,0))
+    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    # dark stage background with rounded look (iOS rounds anyway); fill full for maskable
-    d.rectangle([0,0,S,S], fill=(19,17,13,255))
-    # warm vignette glow
-    glow = Image.new("RGBA",(S,S),(0,0,0,0))
-    gd = ImageDraw.Draw(glow)
-    for i in range(8):
-        a = int(16 - i*1.6)
-        rr = int(S*0.30 + i*S*0.045)
-        gd.ellipse([S/2-rr, S*0.34-rr, S/2+rr, S*0.34+rr], fill=(212,175,79,max(a,0)))
-    img = Image.alpha_composite(img, glow)
-    d = ImageDraw.Draw(img)
-    cx, cy = S/2, S*0.46
-    R = S*0.30
-    r = R*0.40
-    # gold star with darker outline
-    d.polygon(star_points(cx, cy, R, r), fill=(212,175,79,255), outline=(90,66,22,255))
-    # inner highlight star
-    d.polygon(star_points(cx, cy, R*0.9, r*0.9), fill=(236,210,138,255))
-    d.polygon(star_points(cx, cy, R*0.62, r*0.62), fill=(212,175,79,255))
-    # "47" badge style word under star
-    try:
-        from PIL import ImageFont
-        fs = int(S*0.13)
-        font = ImageFont.truetype("georgia.ttf", fs)
-    except Exception:
-        font = None
-    txt = "PREZ"
-    if font:
-        tb = d.textbbox((0,0), txt, font=font)
-        tw, th = tb[2]-tb[0], tb[3]-tb[1]
-        d.text(((S-tw)/2 - tb[0], S*0.78 - th/2 - tb[1]), txt, font=font, fill=(241,230,203,255))
+    # sky
+    for y in range(S):
+        t = y / S
+        if t < 0.62:
+            c = (int(126 + 42 * (1 - t / 0.62)), int(195 + 21 * (1 - t / 0.62)), 232, 255)
+        else:
+            g = (t - 0.62) / 0.38
+            c = (int(106 - 12 * g), int(168 - 18 * g), int(79 - 7 * g), 255)
+        d.line([(0, y), (S, y)], fill=c)
+    # gold sun
+    r = S * 0.13
+    d.ellipse([S * 0.68 - r, S * 0.14 - r, S * 0.68 + r, S * 0.14 + r], fill=(232, 200, 74, 255))
+    # obelisk
+    cx = S * 0.42
+    base_w = S * 0.16
+    top_w = S * 0.07
+    top_y = S * 0.16
+    base_y = S * 0.66
+    d.polygon([(cx - base_w / 2, base_y), (cx - top_w / 2, top_y),
+               (cx + top_w / 2, top_y), (cx + base_w / 2, base_y)], fill=(242, 239, 230, 255))
+    # pyramidion
+    d.polygon([(cx - top_w / 2, top_y), (cx, S * 0.10), (cx + top_w / 2, top_y)], fill=(232, 200, 74, 255))
+    # shade side
+    d.polygon([(cx, base_y), (cx + top_w / 2 * 0.2, top_y), (cx + top_w / 2, top_y),
+               (cx + base_w / 2, base_y)], fill=(221, 216, 200, 255))
+    # plinth
+    d.rectangle([cx - base_w * 0.75, base_y, cx + base_w * 0.75, base_y + S * 0.045], fill=(200, 194, 178, 255))
+    # reflecting pool
+    d.rectangle([S * 0.16, S * 0.76, S * 0.84, S * 0.86], fill=(126, 195, 232, 255))
+    d.rectangle([S * 0.16, S * 0.76, S * 0.84, S * 0.78], fill=(168, 216, 240, 255))
     img.save(fname)
     print("wrote", fname, S)
 
-make(512, fname="icons/icon-512.png")
-make(192, fname="icons/icon-192.png")
-make(180, fname="icons/icon-180.png")
+make(512, "icons/icon-512.png")
+make(192, "icons/icon-192.png")
+make(180, "icons/icon-180.png")
